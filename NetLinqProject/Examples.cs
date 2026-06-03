@@ -78,6 +78,212 @@ namespace NetLinqProject
             PrintList(employeesOneMethods, false);
         }
 
+        public static void LinqSelectExample()
+        {
+            var numbers = Data.IntList();
+            PrintList(numbers);
+
+            var numbersSelectOpers = from n in numbers
+                                     select n;
+
+            PrintList(numbersSelectOpers);
+
+            var numbersSelectMethods = numbers.Select(n => n);
+
+            PrintList(numbersSelectMethods);
+
+            //var obj = new { Title = "War and piece", Author = "Tolstoy Leo" };
+            //Console.WriteLine($"Book: Title: {obj.Title}, Author: {obj.Author}");
+            //Console.WriteLine(obj.GetType());
+
+            var employees = Data.EmployeesList();
+            PrintList(employees, false);
+
+            var employeesNamesOpers = from e in employees
+                                      select new
+                                      {
+                                          FirstName = e.Name,
+                                          EmployeeGender = e.Gender,
+                                          Age = DateTime.Now.Year - e.BirthDate.Year,
+                                      };
+            PrintList(employeesNamesOpers, false);
+
+            var employeesNamesMethods = employees.Select(e => new
+            {
+                FirstName = e.Name,
+                EmployeeGender = e.Gender,
+                Age = DateTime.Now.Year - e.BirthDate.Year,
+            });
+            PrintList(employeesNamesMethods, false);
+
+            var personsOpers = from e in employees
+                               select new Person(e.Name, DateTime.Now.Year - e.BirthDate.Year);
+            PrintList(personsOpers, false);
+
+            var personsMethods = employees.Select(e => new Person(e.Name, DateTime.Now.Year - e.BirthDate.Year));
+            PrintList(personsMethods, false);
+        }
+
+        public static void LinqWhereExample()
+        {
+            var names = Data.StringList();
+            PrintList(names);
+
+            var namesLengthMoreThreeOpers = from n in names
+                                            where n.Length > 3 && n.Length < 6
+                                            select n;
+            PrintList(namesLengthMoreThreeOpers);
+
+            var namesLengthMoreThreeMethods = names.Where(n => n.Length > 3)
+                                                   .Select(n => n);
+            PrintList(namesLengthMoreThreeMethods);
+
+
+            var employees = Data.EmployeesList();
+            PrintList(employees, false);
+
+            var employeesMaleOpers = from e in employees
+                                     where e.Gender == Gender.Male
+                                            && e.BirthDate.Year >= 2000
+                                     select e;
+            PrintList(employeesMaleOpers, false);
+
+            var employeesMaleMethods = employees.Where(
+                e => e.Gender == Gender.Male
+                     && e.BirthDate.Year >= 2000);
+            PrintList(employeesMaleMethods, false);
+        }
+
+        public static void LinqOrderByExample()
+        {
+            var numbers = Data.IntList();
+            var names = Data.StringList();
+            var employees = Data.EmployeesList();
+
+            PrintList(numbers);
+            var numbersOrdersOpers = from n in numbers
+                                     orderby n
+                                     select n;
+            PrintList(numbersOrdersOpers);
+
+            var numbersOrdersDescOpers = from n in numbers
+                                         orderby n descending
+                                         select n;
+            PrintList(numbersOrdersDescOpers);
+
+
+            var numbersOrdersMethod = numbers.OrderBy(n => n);
+            PrintList(numbersOrdersMethod);
+
+            var numbersOrdersDescMethod = numbers.OrderByDescending(n => n);
+            PrintList(numbersOrdersDescMethod);
+
+
+            PrintList(names);
+            var namesOrdersAlphaOpers = from n in names
+                                        orderby n
+                                        select n;
+            PrintList(namesOrdersAlphaOpers);
+            var namesOrdersAlphaDescOpers = from n in names
+                                            orderby n descending
+                                            select n;
+            PrintList(namesOrdersAlphaDescOpers);
+
+            var namesOrdersAlphaMethods = names.OrderBy(n => n);
+            PrintList(namesOrdersAlphaMethods);
+            var namesOrdersAlphaDescMethods = names.OrderByDescending(n => n);
+            PrintList(namesOrdersAlphaDescMethods);
+
+
+            var namesOrderLengthOpers = from n in names
+                                        orderby n.Length, n descending
+                                        select n;
+            PrintList(namesOrderLengthOpers);
+
+            var namesOrderLengthMethods = names.OrderBy(n => n.Length)
+                                               .ThenByDescending(n => n);
+            PrintList(namesOrderLengthMethods);
+
+
+            PrintList(employees, false);
+
+            var employeesOrdersOpers = from e in employees
+                                       orderby e.Gender, e.Salary descending
+                                       select e;
+            PrintList(employeesOrdersOpers, false);
+
+            var employeesOrdersMethods = employees.OrderBy(e => e.Gender)
+                                                  .ThenByDescending(e => e.BirthDate);
+            PrintList(employeesOrdersMethods, false);
+        }
+
+        public static void LinqSetsExample()
+        {
+            var setA = Data.IntList();
+            var setB = Data.IntList();
+
+            PrintList(setA);
+            PrintList(setA.Distinct());
+            PrintList(setB);
+            PrintList(setB.Distinct());
+
+            var setUnion = setA.Union(setB);
+            PrintList(setUnion);
+
+            var setIntersect = setA.Intersect(setB);
+            PrintList(setIntersect);
+
+            var setExceptA = setA.Except(setB);
+            PrintList(setExceptA);
+
+            var setExceptB = setB.Except(setA);
+            PrintList(setExceptB);
+
+
+            var employeesOne = Data.EmployeesList();
+            var employeesTwo = Data.EmployeesList();
+        }
+
+        public static void LinqAgregatesExample()
+        {
+            var numbers = Data.IntList();
+            PrintList(numbers);
+
+            Console.WriteLine(numbers.Count());
+            Console.WriteLine(numbers.Where(n => n >= 50).Count());
+            Console.WriteLine(numbers.Sum());
+            Console.WriteLine(numbers.Min());
+            Console.WriteLine(numbers.Max());
+            Console.WriteLine(numbers.Average());
+            Console.WriteLine(numbers.Aggregate(1, (long a, int b) => a * b));
+            Console.WriteLine();
+
+
+
+            var employees = Data.EmployeesList();
+            PrintList(employees, false);
+            Console.WriteLine(employees.Count());
+            Console.WriteLine(employees.Where(e => e.Gender == Gender.Male)
+                                       .Count());
+            Console.WriteLine(employees.Sum(e => e.Salary));
+            Console.WriteLine(employees.Sum(e => DateTime.Now.Year - e.BirthDate.Year));
+            Console.WriteLine(employees.Min(e => e.Salary));
+            Console.WriteLine(employees.Max(e => e.BirthDate));
+            Console.WriteLine(employees.Max(e => DateTime.Now.Year - e.BirthDate.Year));
+            Console.WriteLine(employees.Average(e => e.Salary));
+            Console.WriteLine(employees.Average(e => DateTime.Now.Year - e.BirthDate.Year));
+
+            var namesStr = employees.Aggregate("Names:", (ns, e) => $"{ns} {e.Name}");
+            Console.WriteLine(namesStr);
+        }
+
+        public static void LinqSkipTakeExample()
+        {
+            var employees = Data.EmployeesList();
+            PrintList(employees.SkipWhile(e => e.Salary < 140000), false);
+            PrintPages(employees, 3);
+        }
+
         static void PrintList<T>(IEnumerable<T> list, bool toline = true)
         {
             foreach (var item in list)
@@ -86,6 +292,39 @@ namespace NetLinqProject
                 else
                     Console.WriteLine(item);
             Console.WriteLine();
+        }
+
+        static void PrintPages<T>(IEnumerable<T> list, int count = 3)
+        {
+            int pages = (int)Math.Ceiling((double)list.Count() / count);
+            for (int i = 0; i < pages; i++)
+            {
+                Console.Clear();
+
+                Console.WriteLine($"Page {i + 1}");
+                var listPage = list.Skip(i * count).Take(count);
+                PrintList(listPage, false);
+                Console.WriteLine("Press any key...");
+                Console.ReadKey();
+            }
+        }
+
+    }
+
+    class Person
+    {
+        public string FirstName { get; set; }
+        public int Age { get; set; }
+
+        public Person(string firstName, int age)
+        {
+            FirstName = firstName;
+            Age = age;
+        }
+
+        public override string ToString()
+        {
+            return $"First Name: {FirstName}, Age: {Age}";
         }
     }
 }
