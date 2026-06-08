@@ -47,6 +47,17 @@ namespace NetLinqProject
         }
     }
 
+    class Company
+    {
+        public string Title { get; set; }
+        public string City { get; set; }
+        public int Region { get; set; }
+
+        public override string ToString()
+        {
+            return $"Title: {Title}, City: {City}, Region: {Region}";
+        }
+    }
     static class Data
     {
         public static List<int> IntList()
@@ -156,5 +167,33 @@ namespace NetLinqProject
 
             return employees;
         }
+
+        public static List<Company> CompaniesList()
+        {
+            List<Company> listCompanies = new()
+            {
+                new()
+                {
+                    Title = "Yandex",
+                    City = "Moscow",
+                    Region = 99
+                },
+                new()
+                {
+                    Title = "Ozon",
+                    City = "St Peterspurg",
+                    Region = 78
+                },
+                new()
+                {
+                    Title = "Mail Group",
+                    City = "Kazan",
+                    Region = 16
+                },
+            };
+
+            return listCompanies;
+        }
+        
     }
 }

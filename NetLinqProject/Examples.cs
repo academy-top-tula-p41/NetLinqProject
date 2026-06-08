@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace NetLinqProject
@@ -342,6 +344,146 @@ namespace NetLinqProject
 
         }
 
+        public static void LinqJoinExample()
+        {
+            var employees = Data.EmployeesList();
+            var companies = Data.CompaniesList();
+
+            PrintList(employees, false);
+            PrintList(companies, false);
+
+            var employeesCompanyOpers = from e in employees
+                                        join c in companies
+                                         on e.Company?.ToLower() equals c.Title.ToLower()
+                                        select new
+                                        {
+                                            Employee = e.Name,
+                                            Company = c.Title,
+                                            Gender = (e.Gender == Gender.Male) ? "Male" : "Female",
+                                            c.City,
+                                            c.Region,
+                                        };
+            PrintList(employeesCompanyOpers, false);
+
+
+            var companyEmployeesOpers = from c in companies
+                                        join e in employees
+                                            on c.Title equals e.Company
+                                            into ce
+                                        select new
+                                        {
+                                            Company = c.Title,
+                                            City = c.City,
+                                            Employees = from ee in ce
+                                                        select new
+                                                        {
+                                                            Name = ee.Name,
+                                                            BirthDate = ee.BirthDate,
+                                                        }
+                                        };
+
+            foreach (var c in companyEmployeesOpers)
+            {
+                Console.WriteLine($"Company: {c.Company} ({c.City})");
+                foreach (var e in c.Employees)
+                    Console.WriteLine($"\t{e}");
+            }
+            Console.WriteLine();
+
+
+            var companyEmployeesMethods = companies.GroupJoin(
+                                                    employees,
+                                                    c => c.Title,
+                                                    e => e.Company,
+                                                    (c, empls) => new
+                                                    {
+                                                        Company = c.Title,
+                                                        City = c.City,
+                                                        Employees = empls.Select(
+                                                            e => new
+                                                            {
+                                                                Name = e.Name,
+                                                                BirthDate = e.BirthDate,
+                                                            })
+                                                    });
+
+            foreach (var c in companyEmployeesMethods)
+            {
+                Console.WriteLine($"Company: {c.Company} ({c.City})");
+                foreach (var e in c.Employees)
+                    Console.WriteLine($"\t{e}");
+            }
+            Console.WriteLine();
+
+
+            var employeesCompanyMethods = employees.Join(
+                companies,
+                e => e.Company,
+                c => c.Title,
+                (e, c) => new
+                {
+                    Employee = e.Name,
+                    Company = c.Title,
+                    Gender = (e.Gender == Gender.Male) ? "Male" : "Female",
+                    c.City,
+                    c.Region,
+                });
+
+            PrintList(employeesCompanyMethods, false);
+        }
+
+        public static void LinqAllAnyContainsFindsExample()
+        {
+            var numbers = Data.IntList();
+            PrintList(numbers);
+
+            Console.WriteLine("All");
+            Console.WriteLine($"\t{numbers.All(n => n > 0)}");
+            Console.WriteLine($"\t{numbers.All(n => n >= 50)}");
+            Console.WriteLine("Any");
+            Console.WriteLine($"\t{numbers.Any(n => n == 50)}");
+            Console.WriteLine("Contains");
+            Console.WriteLine($"\t{numbers.Contains(50)}");
+            Console.WriteLine();
+
+            var names = Data.StringList();
+            PrintList(names);
+            Regex regex = new Regex("[a-zA-Z]+");
+            Console.WriteLine("All");
+            Console.WriteLine($"\t{names.All(name => regex.IsMatch(name))}");
+            Console.WriteLine($"\t{names.All(name => name.Length > 3)}");
+            Console.WriteLine("Any");
+            Console.WriteLine($"\t{names.Any(name => name == "Yan")}");
+            Console.WriteLine($"\t{names.Any(name => name.Length == 2)}");
+            Console.WriteLine("Contains");
+            Console.WriteLine($"\t{names.Contains("yan", new StringCapsIgnoreComparer())}");
+            Console.WriteLine();
+
+
+            var employees = Data.EmployeesList();
+            PrintList(employees, false);
+            Console.WriteLine("All");
+            Console.WriteLine($"\t{employees.All(e => e.Salary >= 100000)}");
+            Console.WriteLine($"\t{employees.All(e => e.Gender == Gender.Male)}");
+            Console.WriteLine("Any");
+            Console.WriteLine($"\t{employees.Any(e => e.Gender == Gender.Male)}");
+            Console.WriteLine($"\t{employees.Any(e => e.Salary < 100000)}");
+            Console.WriteLine("Contains");
+            Employee jonny = new()
+            {
+                Name = "Jonny",
+                BirthDate = new DateTime(2000, 5, 21),
+                Gender = Gender.Male,
+                Salary = 120000,
+                Company = "Yandex",
+            };
+            Console.WriteLine($"\t{employees.Contains(jonny)}");
+            Console.WriteLine();
+            var empl = employees.LastOrDefault(e => e.Gender == Gender.Female);
+            Console.WriteLine(empl);
+        }
+
+
         static void PrintList<T>(IEnumerable<T> list, bool toline = true)
         {
             foreach (var item in list)
@@ -383,6 +525,19 @@ namespace NetLinqProject
         public override string ToString()
         {
             return $"First Name: {FirstName}, Age: {Age}";
+        }
+    }
+
+    class StringCapsIgnoreComparer : IEqualityComparer<string>
+    {
+        public bool Equals(string? x, string? y)
+        {
+            return x?.ToLower() == y?.ToLower();
+        }
+
+        public int GetHashCode([DisallowNull] string obj)
+        {
+            return obj.ToLower().GetHashCode();
         }
     }
 }
