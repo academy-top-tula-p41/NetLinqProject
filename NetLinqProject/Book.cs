@@ -14,6 +14,11 @@ namespace NetLinqProject
         public int? PublishYear { get; set; }
         public decimal Price { get; set; }
 
+        public override string ToString()
+        {
+            return $"Title: {Title}, Author: {Author}, Publisher: {Publisher}, Year: {PublishYear}, Price: {Price}";
+        }
+
         public static List<Book> GetBooks()
         {
             List<Book> books = new()
